@@ -379,7 +379,7 @@ test_data = [
              ),
              h(
                  zero_hashes[0],
-                 h(chunk(""), chunk("00"))
+                 h(h(chunk(""), chunk("")), chunk("00"))
              )
          )), chunk("ab")),
          chunk("15")
@@ -394,7 +394,7 @@ test_data = [
              ),
              h(
                  zero_hashes[0],
-                 h(chunk(""), chunk("00"))
+                 h(h(chunk(""), chunk("")), chunk("00"))
              )
          )), chunk("ab")),
          chunk("15")

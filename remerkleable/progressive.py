@@ -276,6 +276,12 @@ class ProgressiveBitlist(BitsView):
             input_nodes = pack_bits_to_chunks(input_bits)
             contents = subtree_fill_progressive(input_nodes)
             kwargs['backing'] = PairNode(contents, uint256(len(input_bits)).get_backing())
+        elif 'backing' not in kwargs:
+            # Empty progressive bitlist still needs one zero chunk for correct merkleization
+            from remerkleable.tree import RootNode, Root
+            zero_chunk = RootNode(Root(b'\x00' * 32))
+            contents = subtree_fill_progressive([zero_chunk])
+            kwargs['backing'] = PairNode(contents, uint256(0).get_backing())
         return super().__new__(cls, **kwargs)
 
     def __iter__(self) -> Iterator[bool]:
@@ -291,7 +297,11 @@ class ProgressiveBitlist(BitsView):
 
     @classmethod
     def default_node(cls) -> Node:
-        return PairNode(zero_node(0), zero_node(0))  # mix-in 0 as list length
+        # Empty progressive bitlist needs one zero chunk for correct merkleization
+        from remerkleable.tree import RootNode, Root
+        zero_chunk = RootNode(Root(b'\x00' * 32))
+        contents = subtree_fill_progressive([zero_chunk])
+        return PairNode(contents, zero_node(0))  # mix-in 0 as list length
 
     @classmethod
     def type_repr(cls) -> str:
@@ -377,6 +387,13 @@ class ProgressiveBitlist(BitsView):
         if scope < 1:
             raise Exception('cannot have empty scope for progressive bitlist, need at least a delimiting bit')
         chunks, bitlen = deserialize_bits(stream, scope, with_delimiting_bit=True)
+        
+        # Empty progressive bitlist needs one zero chunk for correct merkleization
+        if bitlen == 0:
+            from remerkleable.tree import RootNode, Root
+            zero_chunk = RootNode(Root(b'\x00' * 32))
+            chunks = [zero_chunk]
+        
         contents = subtree_fill_progressive(chunks)
         backing = PairNode(contents, uint256(bitlen).get_backing())
         return cls.view_from_backing(backing)

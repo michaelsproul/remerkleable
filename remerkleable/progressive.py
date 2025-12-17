@@ -16,7 +16,7 @@ from remerkleable.core import BackedView, BasicView, ObjType, View, ViewHook, Vi
 from remerkleable.complex import Container, Fields, MonoSubtreeView, \
     append_view, create_readonly_iter, get_field_val_repr, pop_and_summarize
 from remerkleable.readonly_iters import BitfieldIter, NodeIter
-from remerkleable.tree import Gindex, NavigationError, Node, PairNode, \
+from remerkleable.tree import Gindex, NavigationError, Node, PairNode, Root, RootNode, \
     subtree_fill_to_contents, zero_node, LEFT_GINDEX, RIGHT_GINDEX
 
 V = TypeVar('V', bound=View)
@@ -278,7 +278,6 @@ class ProgressiveBitlist(BitsView):
             kwargs['backing'] = PairNode(contents, uint256(len(input_bits)).get_backing())
         elif 'backing' not in kwargs:
             # Empty progressive bitlist still needs one zero chunk for correct merkleization
-            from remerkleable.tree import RootNode, Root
             zero_chunk = RootNode(Root(b'\x00' * 32))
             contents = subtree_fill_progressive([zero_chunk])
             kwargs['backing'] = PairNode(contents, uint256(0).get_backing())
@@ -298,7 +297,6 @@ class ProgressiveBitlist(BitsView):
     @classmethod
     def default_node(cls) -> Node:
         # Empty progressive bitlist needs one zero chunk for correct merkleization
-        from remerkleable.tree import RootNode, Root
         zero_chunk = RootNode(Root(b'\x00' * 32))
         contents = subtree_fill_progressive([zero_chunk])
         return PairNode(contents, zero_node(0))  # mix-in 0 as list length
@@ -390,7 +388,6 @@ class ProgressiveBitlist(BitsView):
         
         # Empty progressive bitlist needs one zero chunk for correct merkleization
         if bitlen == 0:
-            from remerkleable.tree import RootNode, Root
             zero_chunk = RootNode(Root(b'\x00' * 32))
             chunks = [zero_chunk]
         
